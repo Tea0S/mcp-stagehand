@@ -39,10 +39,13 @@ On your machine (repo root):
 
 ```powershell
 cd F:\Development\mcp-stagehand
+Remove-Item stagehand-openai-plugin.zip -ErrorAction SilentlyContinue
 Compress-Archive -Path openai-plugin\* -DestinationPath stagehand-openai-plugin.zip -Force
 ```
 
-ZIP root must contain `plugin.json` and `mcp.json` directly (not `openai-plugin/plugin.json` nested).
+ZIP root must contain `plugin.json`, `mcp.json`, and `assets/logo.png` + `assets/icon.png` directly (not nested under an extra `openai-plugin/` folder).
+
+Branding lives in `extensions.com.openai` (`logo`, `composerIcon`, `displayName`, …) and the Codex overlay `.codex-plugin/plugin.json` `interface` block. If the portal shows a blank icon after upload, re-ZIP and use **Upload plugin** / **Upload new version** on the existing draft (v1.0.1+).
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "stagehand",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Configure StageHand on Discord — indexes, lore panels, Flow Builder, forms, dice, and more. Sign in with Discord (OAuth).",
   "author": {
     "name": "Tea House",
@@ -23,8 +23,23 @@
   "extensions": {
     "com.openai": {
       "displayName": "StageHand",
+      "shortDescription": "Configure StageHand on Discord from ChatGPT or Codex.",
+      "longDescription": "StageHand automates Discord roleplay servers. Connect this plugin to configure indexes, lore panels, Flow Builder, forms, dice, mailboxes, scene, tickets, and more. Sign in with Discord on stagehand.quest (OAuth). Only works on servers where you have Manage Server — not a general Discord moderator.",
+      "developerName": "Tea House",
+      "category": "Productivity",
+      "capabilities": ["Write"],
+      "websiteURL": "https://stagehand.quest",
+      "privacyPolicyURL": "https://stagehand.quest/privacy",
+      "termsOfServiceURL": "https://stagehand.quest/privacy",
+      "brandColor": "#7B8CDE",
+      "composerIcon": "./assets/icon.png",
       "logo": "./assets/logo.png",
-      "onboardingSkill": "./skills/stagehand-setup/SKILL.md"
+      "onboardingSkill": "./skills/stagehand-setup/SKILL.md",
+      "defaultPrompt": [
+        "Run stagehand_auth_check",
+        "Help me set up a StageHand forum index",
+        "Draft a lore panel for our rules channel"
+      ]
     }
   }
 }
