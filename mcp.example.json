@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "stagehand": {
+      "command": "npx",
+      "args": ["-y", "mcp-stagehand"],
+      "env": {
+        "STAGEHAND_API_KEY": "sh_YOUR_KEY_FROM_DASHBOARD_ME",
+        "STAGEHAND_DEFAULT_GUILD_ID": "YOUR_GUILD_ID"
+      }
+    }
+  }
+}

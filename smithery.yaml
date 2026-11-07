@@ -1,0 +1,32 @@
+# https://smithery.ai/docs/build/project-config/smithery.yaml
+version: 1
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - stagehandApiKey
+    properties:
+      stagehandApiKey:
+        type: string
+        title: StageHand AI helper key
+        description: sh_… key from stagehand.quest → Dashboard → Me → AI helpers
+      defaultGuildId:
+        type: string
+        title: Default Discord server id
+        description: Optional. STAGEHAND_DEFAULT_GUILD_ID
+  exampleConfig:
+    stagehandApiKey: sh_YOUR_KEY
+    defaultGuildId: "000000000000000000"
+  commandFunction: |
+    (config) => ({
+      command: "node",
+      args: ["build/index.js"],
+      env: {
+        STAGEHAND_API_KEY: config.stagehandApiKey,
+        STAGEHAND_DEFAULT_GUILD_ID: config.defaultGuildId || ""
+      }
+    })
+
+build:
+  dockerfile: Dockerfile

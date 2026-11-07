@@ -1,0 +1,25 @@
+{
+  "name": "stagehand-plugins",
+  "owner": {
+    "name": "Tea House",
+    "email": "support@stagehand.quest"
+  },
+  "metadata": {
+    "description": "StageHand Cursor plugins — Discord server setup via hosted MCP",
+    "version": "1.0.0",
+    "pluginRoot": ""
+  },
+  "plugins": [
+    {
+      "name": "stagehand",
+      "source": "cursor-plugin",
+      "description": "Configure StageHand on Discord with OAuth — indexes, lore, Flows, and more",
+      "version": "1.0.0",
+      "homepage": "https://stagehand.quest/docs/stagehand/ai-helpers",
+      "repository": "https://github.com/Tea0S/mcp-stagehand",
+      "license": "MIT",
+      "keywords": ["stagehand", "discord", "mcp", "roleplay"],
+      "logo": "cursor-plugin/assets/logo.png"
+    }
+  ]
+}
