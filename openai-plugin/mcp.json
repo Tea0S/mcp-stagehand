@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "stagehand": {
+      "type": "streamable-http",
+      "url": "https://mcp.stagehand.quest/mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "authorizationUrl": "https://stagehand.quest/oauth/authorize",
+            "tokenUrl": "https://stagehand.quest/oauth/token",
+            "registrationUrl": "https://stagehand.quest/oauth/register",
+            "scopes": ["stagehand"]
+          }
+        }
+      }
+    }
+  }
+}

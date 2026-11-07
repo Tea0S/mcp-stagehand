@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "stagehand",
+  "version": "1.0.0",
+  "description": "Configure StageHand on Discord — indexes, lore panels, Flow Builder, forms, dice, and more. Sign in with Discord (OAuth).",
+  "author": {
+    "name": "Tea House",
+    "email": "support@stagehand.quest",
+    "url": "https://stagehand.quest"
+  },
+  "homepage": "https://stagehand.quest/docs/stagehand/ai-helpers",
+  "repository": "https://github.com/Tea0S/mcp-stagehand",
+  "license": "MIT",
+  "keywords": [
+    "stagehand",
+    "discord",
+    "roleplay",
+    "mcp",
+    "indexes",
+    "flows",
+    "lore"
+  ],
+  "extensions": {
+    "com.openai": {
+      "displayName": "StageHand",
+      "logo": "./assets/logo.png",
+      "onboardingSkill": "./skills/stagehand-setup/SKILL.md"
+    }
+  }
+}

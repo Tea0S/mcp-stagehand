@@ -1,6 +1,55 @@
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { GUILD_UPDATE_SECTIONS, SETUP_FEATURES } from "./tools/sections.js";
 
+/** Human titles + Claude/OpenAI directory annotations (title + readOnly or destructive). */
+function annotateTools(tools: Tool[]): Tool[] {
+  return tools.map((tool) => {
+    const name = tool.name;
+    const title = name
+      .replace(/^stagehand_/, "")
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    const isRead =
+      /_(check|get|export|live|catalog|requirements|surface|stats|events|validate|opener_presets)$/.test(
+        name
+      ) ||
+      /_list(_|$)/.test(name) ||
+      name.includes("_list_") ||
+      name.startsWith("stagehand_list_") ||
+      name === "stagehand_auth_check" ||
+      name === "stagehand_setup_requirements" ||
+      name === "stagehand_get_surface" ||
+      name === "stagehand_flow_node_catalog" ||
+      name === "stagehand_lore_validate_layout" ||
+      name === "stagehand_mailbox_opener_presets" ||
+      name === "stagehand_dice_presets_live" ||
+      name === "stagehand_calendar_live" ||
+      name === "stagehand_reputation_live";
+
+    const isDestructive =
+      /_(delete|clear|cancel|end)$/.test(name) ||
+      name.includes("_delete") ||
+      name === "stagehand_ifttt_pending_cancel" ||
+      name === "stagehand_mia_hiatus_mia_clear" ||
+      name === "stagehand_mia_hiatus_hiatus_end" ||
+      name === "stagehand_emojis_delete";
+
+    return {
+      ...tool,
+      annotations: {
+        title,
+        ...(isRead
+          ? { readOnlyHint: true, destructiveHint: false }
+          : isDestructive
+            ? { readOnlyHint: false, destructiveHint: true }
+            : { readOnlyHint: false, destructiveHint: false }),
+      },
+    };
+  });
+}
+
 const guildIdProp = {
   guild_id: {
     type: "string",
@@ -15,7 +64,7 @@ const actorIdProp = {
   },
 };
 
-export const toolList: Tool[] = [
+const _rawToolList: Tool[] = [
   {
     name: "stagehand_auth_check",
     description:
@@ -810,3 +859,5 @@ export const toolList: Tool[] = [
     },
   },
 ];
+
+export const toolList: Tool[] = annotateTools(_rawToolList);

@@ -15,7 +15,11 @@ Version **1.3** covers the full dual-auth StageHand setup surface (not Discord m
 
 Hosted URL: `https://mcp.stagehand.quest/mcp` (OAuth Authenticate, or `Authorization: Bearer sh_…`)
 
-**Cursor Marketplace plugin** (package + submit notes): [`cursor-plugin/`](cursor-plugin/) · [CURSOR_MARKETPLACE.md](CURSOR_MARKETPLACE.md)
+**Directory packages (staff submit notes):**
+
+- Cursor: [`cursor-plugin/`](cursor-plugin/) · [CURSOR_MARKETPLACE.md](CURSOR_MARKETPLACE.md)
+- ChatGPT / Codex: [`openai-plugin/`](openai-plugin/) · [OPENAI_PLUGIN.md](OPENAI_PLUGIN.md)
+- Claude Connectors: [`claude-connector/`](claude-connector/) · [CLAUDE_CONNECTOR.md](CLAUDE_CONNECTOR.md)
 
 ```toml
 [mcp_servers.stagehand]

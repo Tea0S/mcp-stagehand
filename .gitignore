@@ -3,3 +3,5 @@ build/
 .env
 *.log
 .DS_Store
+stagehand-openai-plugin.zip
+*.zip
