@@ -49,14 +49,34 @@ Branding lives in `extensions.com.openai` (`logo`, `composerIcon`, `displayName`
 
 ---
 
-## Step 1 — Open the Plugins portal and upload (draft only)
+## Step 1 — Use the Platform portal (not chatgpt.com/plugins)
 
-1. Sign into ChatGPT / OpenAI platform as the org that will own the plugin.
-2. Open **Plugins** (plugin directory / developer plugins area — “Upload new or existing plugin”).
-3. Pick your **verified Developer identity**.
-4. Upload `stagehand-openai-plugin.zip`.
-5. You land on a **plugin detail / draft** page.  
-   **Still not public.**
+There are **two different UIs**:
+
+| Where | What it is |
+|-------|------------|
+| **chatgpt.com/plugins/…** (what you’ve been looking at) | ChatGPT product page for *your* installed/draft plugin. **+ Install** is for you. No identity picker. Not how you publish globally. |
+| **[platform.openai.com/plugins](https://platform.openai.com/plugins)** | Developer **submission** portal from the [OpenAI docs](https://developers.openai.com/plugins/deploy/submission). Draft → review → **Publish**. |
+
+### Publishing identity (why you may not see a picker)
+
+Docs say “choose your verified Developer identity” at upload — but that control only appears when:
+
+1. You’re in **platform.openai.com/plugins** (correct org selected in the top-left org switcher), **and**
+2. You’ve already completed verification under **Platform → Settings** (organization settings / identity), **and**
+3. You have something to choose between (e.g. verified **individual** *and* verified **business**).
+
+If only your personal identity is verified, upload silently uses **Mere Lorraine-Putnam** — there is nothing to pick.  
+`developerName` in the ZIP does **not** override the directory “By …” line.
+
+**To list as Tea House / a company:** complete **business verification** in Platform settings first, then upload (or create a new submission) under that business identity in `platform.openai.com/plugins`.
+
+### Upload (draft only)
+
+1. Open https://platform.openai.com/plugins  
+2. Confirm the correct **organization** is selected.  
+3. **Upload new or existing plugin** → if an identity chooser appears, pick the **business** one → upload `stagehand-openai-plugin.zip`.  
+4. You get a **draft**. Still not public.
 
 ---
 
