@@ -185,6 +185,85 @@ export async function reputationLiveHandler(
   }
 }
 
+const ListClaimsSchema = z.object({
+  guild_id: z.string().optional(),
+  pool: z.string().optional(),
+  include_claims: z.boolean().optional(),
+});
+
+/** List Flow Builder claim pools (phone, locker, …) and optional claim rows. */
+export async function listClaimsHandler(
+  args: unknown,
+  client: StagehandClient
+): Promise<ToolResult> {
+  try {
+    const a = ListClaimsSchema.parse(args ?? {});
+    const guildId = client.resolveGuildId(a.guild_id);
+    const q: Record<string, string> = {
+      include_claims: a.include_claims === false ? "0" : "1",
+    };
+    if (a.pool?.trim()) q.pool = a.pool.trim();
+    const data = await client.getJson(
+      `/v1/stagehand/live/guilds/${guildId}/claims`,
+      q
+    );
+    return okJson(data);
+  } catch (e) {
+    return errText(e instanceof Error ? e.message : String(e));
+  }
+}
+
+const LookupClaimSchema = z.object({
+  guild_id: z.string().optional(),
+  pool: z.string().min(1),
+  query: z.string().min(1),
+});
+
+/** Look up one claim in a pool by muse name, label, or value fragment. */
+export async function lookupClaimHandler(
+  args: unknown,
+  client: StagehandClient
+): Promise<ToolResult> {
+  try {
+    const a = LookupClaimSchema.parse(args);
+    const guildId = client.resolveGuildId(a.guild_id);
+    const data = await client.getJson(
+      `/v1/stagehand/live/guilds/${guildId}/claims/lookup`,
+      { pool: a.pool, q: a.query }
+    );
+    return okJson(data);
+  } catch (e) {
+    return errText(e instanceof Error ? e.message : String(e));
+  }
+}
+
+const MuseClaimsSchema = z.object({
+  guild_id: z.string().optional(),
+  muse_id: z.string().min(1),
+  pools: z.string().optional().describe("Optional comma-separated pool names"),
+});
+
+/** Claims held by one muse across pools. */
+export async function museClaimsHandler(
+  args: unknown,
+  client: StagehandClient
+): Promise<ToolResult> {
+  try {
+    const a = MuseClaimsSchema.parse(args);
+    const guildId = client.resolveGuildId(a.guild_id);
+    const q: Record<string, string> | undefined = a.pools?.trim()
+      ? { pools: a.pools.trim() }
+      : undefined;
+    const data = await client.getJson(
+      `/v1/stagehand/live/guilds/${guildId}/claims/muse/${encodeURIComponent(a.muse_id)}`,
+      q
+    );
+    return okJson(data);
+  } catch (e) {
+    return errText(e instanceof Error ? e.message : String(e));
+  }
+}
+
 export async function birthdaysListHandler(
   args: unknown,
   client: StagehandClient

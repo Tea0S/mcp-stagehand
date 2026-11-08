@@ -22,6 +22,83 @@ const IndexDataSchema = z.object({
   priority_tag: z.string().optional(),
 });
 
+const ListIndexesSchema = z.object({
+  guild_id: z.string().optional(),
+});
+
+/**
+ * List configured indexes and which forums still lack one (by name/id).
+ * Prefer this over asking the user which forums are missing indexes.
+ */
+export async function listIndexesHandler(
+  args: unknown,
+  client: StagehandClient
+): Promise<ToolResult> {
+  try {
+    const a = ListIndexesSchema.parse(args ?? {});
+    const guildId = client.resolveGuildId(a.guild_id);
+    const [surface, channels] = await Promise.all([
+      client.getJson<{
+        config?: {
+          indexes?: Array<Record<string, unknown>>;
+          group_indexes?: Array<Record<string, unknown>>;
+          layered_indexes?: Array<Record<string, unknown>>;
+        };
+      }>("/v1/stagehand/surface", client.surfaceQuery(guildId)),
+      client.getJson<{
+        forums?: Array<{ id?: string; name?: string }>;
+        error?: string;
+      }>("/v1/stagehand/channels", { guild_id: guildId }),
+    ]);
+
+    const indexes = Array.isArray(surface?.config?.indexes)
+      ? surface.config!.indexes!
+      : [];
+    const indexedForumIds = new Set(
+      indexes
+        .map((row) => String(row.forum_id || "").trim())
+        .filter(Boolean)
+    );
+    const forums = Array.isArray(channels?.forums) ? channels.forums! : [];
+    const forumsMissingIndex = forums
+      .filter((f) => {
+        const id = String(f.id || "").trim();
+        return id && !indexedForumIds.has(id);
+      })
+      .map((f) => ({
+        id: String(f.id || ""),
+        name: String(f.name || ""),
+      }));
+
+    return okJson({
+      ok: true,
+      guild_id: guildId,
+      indexes: indexes.map((row) => ({
+        forum_id: String(row.forum_id || ""),
+        index_name: String(row.index_name || ""),
+        index_thread_name: String(row.index_thread_name || ""),
+        has_thumb_image: Boolean(row.has_thumb_image),
+      })),
+      group_indexes: surface?.config?.group_indexes ?? [],
+      layered_indexes: surface?.config?.layered_indexes ?? [],
+      forums: forums.map((f) => ({
+        id: String(f.id || ""),
+        name: String(f.name || ""),
+      })),
+      forums_missing_index: forumsMissingIndex,
+      channels_error: channels?.error || null,
+      hint:
+        forumsMissingIndex.length === 0
+          ? "Every forum already has a StageHand index (or there are no forums)."
+          : `Forums without an index: ${forumsMissingIndex
+              .map((f) => f.name || f.id)
+              .join(", ")}. Use stagehand_index_upsert with forum_id + index_name.`,
+    });
+  } catch (e) {
+    return errText(e instanceof Error ? e.message : String(e));
+  }
+}
+
 const IndexUpsertSchema = z.object({
   guild_id: z.string().optional(),
   actor_id: z.string().optional(),

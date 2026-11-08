@@ -99,9 +99,10 @@ async function readAdvanced(
   client: StagehandClient,
   guildId: string
 ): Promise<AdvancedConfig> {
-  const surface = await client.getJson<SurfaceResponse>("/v1/stagehand/surface", {
-    guild_id: guildId,
-  });
+  const surface = await client.getJson<SurfaceResponse>(
+    "/v1/stagehand/surface",
+    client.surfaceQuery(guildId)
+  );
   return normalizeAdvanced(surface?.config?.iftttAdvanced);
 }
 

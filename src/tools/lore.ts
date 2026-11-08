@@ -269,6 +269,7 @@ export async function loreCarouselDeleteHandler(
 }
 
 const LoreValidateSchema = z.object({
+  guild_id: z.string().optional(),
   panel: z.record(z.unknown()),
 });
 
@@ -278,9 +279,11 @@ export async function loreValidateLayoutHandler(
 ): Promise<ToolResult> {
   try {
     const a = LoreValidateSchema.parse(args);
-    const data = await client.postJson("/v1/stagehand/lore/validate-layout", {
-      panel: a.panel,
-    });
+    const payload: Record<string, unknown> = { panel: a.panel };
+    if (a.guild_id || client.defaults.guildId || client.defaults.authMode === "user_key") {
+      payload.guild_id = client.resolveGuildId(a.guild_id);
+    }
+    const data = await client.postJson("/v1/stagehand/lore/validate-layout", payload);
     return okJson(data);
   } catch (e) {
     return errText(e instanceof Error ? e.message : String(e));

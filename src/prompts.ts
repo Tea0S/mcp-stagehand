@@ -13,6 +13,7 @@ function setupPreamble(guild: string, feature: string): string[] {
     `Rules:`,
     `- StageHand setup only — do NOT kick/ban, create Discord channels, or moderate.`,
     `- Call stagehand_setup_requirements with feature="${feature === "Flow Builder" ? "flows" : feature.replace(/ /g, "_").toLowerCase()}" when unsure what to gather.`,
+    `- Resolve the server with stagehand_list_guilds when the user gives a display name — do not ask for a guild snowflake first.`,
     `- Call stagehand_list_channels (and stagehand_list_emojis if needed) — never invent snowflakes.`,
     `- If images/art are needed and the user did not attach files, ASK for image_path or base64 before stagehand_upload_asset.`,
     `- Call stagehand_auth_check if credentials look wrong.`,

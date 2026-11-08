@@ -12,7 +12,7 @@ function annotateTools(tools: Tool[]): Tool[] {
       .join(" ");
 
     const isRead =
-      /_(check|get|export|live|catalog|requirements|surface|stats|events|validate|opener_presets)$/.test(
+      /_(check|get|export|live|catalog|requirements|surface|stats|events|validate)$/.test(
         name
       ) ||
       /_list(_|$)/.test(name) ||
@@ -23,10 +23,11 @@ function annotateTools(tools: Tool[]): Tool[] {
       name === "stagehand_get_surface" ||
       name === "stagehand_flow_node_catalog" ||
       name === "stagehand_lore_validate_layout" ||
-      name === "stagehand_mailbox_opener_presets" ||
       name === "stagehand_dice_presets_live" ||
       name === "stagehand_calendar_live" ||
-      name === "stagehand_reputation_live";
+      name === "stagehand_reputation_live" ||
+      name === "stagehand_lookup_claim" ||
+      name === "stagehand_muse_claims";
 
     const isDestructive =
       /_(delete|clear|cancel|end)$/.test(name) ||
@@ -34,12 +35,14 @@ function annotateTools(tools: Tool[]): Tool[] {
       name === "stagehand_ifttt_pending_cancel" ||
       name === "stagehand_mia_hiatus_mia_clear" ||
       name === "stagehand_mia_hiatus_hiatus_end" ||
-      name === "stagehand_emojis_delete";
+      name === "stagehand_emojis_delete" ||
+      name === "stagehand_mailbox_opener_presets";
 
     return {
       ...tool,
       annotations: {
         title,
+        openWorldHint: !["stagehand_setup_requirements", "stagehand_flow_node_catalog"].includes(name),
         ...(isRead
           ? { readOnlyHint: true, destructiveHint: false }
           : isDestructive
@@ -53,7 +56,8 @@ function annotateTools(tools: Tool[]): Tool[] {
 const guildIdProp = {
   guild_id: {
     type: "string",
-    description: "Discord guild id (optional if STAGEHAND_DEFAULT_GUILD_ID / X-StageHand-Guild-Id set)",
+    description:
+      "Discord guild snowflake. Prefer stagehand_list_guilds (by server display name) first — do not ask the user for a raw id if they already named the server.",
   },
 };
 
@@ -68,7 +72,7 @@ const _rawToolList: Tool[] = [
   {
     name: "stagehand_auth_check",
     description:
-      "Verify STAGEHAND_API_KEY (sh_…) against StageHand. Returns fingerprints only — never the raw key. Call first when setup fails or before large changes.",
+      "Verify the current MCP session is authenticated with StageHand (OAuth access token or Bearer sh_…). Returns fingerprints only — never the raw secret. Do not ask the user for an API key if OAuth Authenticate already succeeded. Call first when setup fails or before large changes.",
     inputSchema: {
       type: "object",
       properties: {
@@ -79,7 +83,7 @@ const _rawToolList: Tool[] = [
   {
     name: "stagehand_setup_requirements",
     description:
-      "BEFORE writing config for a vague user request: returns required Discord ids, assets to ask for, and which tools to use. Always ask the user for missing images/channel/role ids — never invent them. StageHand setup only (not Discord moderation).",
+      "BEFORE writing config for a vague user request: returns required Discord ids, assets to ask for, and which tools to use. Resolve the server with stagehand_list_guilds when the user gives a display name. Ask for missing channel/role ids or images only after listing — never invent snowflakes. StageHand setup only (not Discord moderation).",
     inputSchema: {
       type: "object",
       properties: {
@@ -93,15 +97,39 @@ const _rawToolList: Tool[] = [
     },
   },
   {
+    name: "stagehand_list_guilds",
+    description:
+      "List Discord servers where this user can manage StageHand (display name + guild id). Call this when the user names a server (e.g. \"Briar of Bargains\") instead of asking for a snowflake or channel link. Optional query filters by name substring.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Server name substring to match (e.g. Briar, Bargains)",
+        },
+        name: {
+          type: "string",
+          description: "Alias for query — server display name or fragment",
+        },
+      },
+    },
+  },
+  {
     name: "stagehand_get_surface",
     description:
-      "Read StageHand guild surface (indexes, lore, forms, dice, roles, tickets, flows, etc.). Always read before large guild_update merges.",
+      "Read StageHand guild surface under config (indexes, lore, forms, dice, roles, tickets, flows, etc.). Always read before large guild_update merges. For \"which forums lack an index\" prefer stagehand_list_indexes.",
+    inputSchema: { type: "object", properties: { ...guildIdProp } },
+  },
+  {
+    name: "stagehand_list_indexes",
+    description:
+      "List configured StageHand indexes for a guild and which Discord forums are still missing an index. Use when the user asks which player forums need indexes — resolve the guild with stagehand_list_guilds first if they gave a server name.",
     inputSchema: { type: "object", properties: { ...guildIdProp } },
   },
   {
     name: "stagehand_list_channels",
     description:
-      "List Discord channels/categories/roles as StageHand sees them. Use to resolve snowflakes — never invent ids.",
+      "List Discord channels/categories/roles as StageHand sees them (names + ids). After resolving the guild via stagehand_list_guilds, use this to find forums/channels by name — never invent ids.",
     inputSchema: { type: "object", properties: { ...guildIdProp } },
   },
   {
@@ -488,6 +516,59 @@ const _rawToolList: Tool[] = [
     },
   },
   {
+    name: "stagehand_list_claims",
+    description:
+      "List Flow Builder claim pools for a guild (phone, locker, badge, …) and the saved claims. Optional pool filter. Use when the user asks about pools/claims on a server.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        pool: {
+          type: "string",
+          description: "Optional pool name filter (e.g. phone)",
+        },
+        include_claims: {
+          type: "boolean",
+          description: "Include claim rows (default true). Set false for pool names only.",
+        },
+      },
+    },
+  },
+  {
+    name: "stagehand_lookup_claim",
+    description:
+      "Look up one claim in a pool by muse name, label, or value fragment (e.g. pool=phone, query=Luné).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        pool: { type: "string", description: "Pool name (required)" },
+        query: {
+          type: "string",
+          description: "Muse name, label, or value to search",
+        },
+      },
+      required: ["pool", "query"],
+    },
+  },
+  {
+    name: "stagehand_muse_claims",
+    description:
+      "List all claim-pool values held by one muse id (optional comma-separated pools filter).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        muse_id: { type: "string", description: "Muse snowflake / id" },
+        pools: {
+          type: "string",
+          description: "Optional comma-separated pool names",
+        },
+      },
+      required: ["muse_id"],
+    },
+  },
+  {
     name: "stagehand_birthdays_list",
     description: "List birthdays (live bot API).",
     inputSchema: { type: "object", properties: { ...guildIdProp } },
@@ -644,7 +725,7 @@ const _rawToolList: Tool[] = [
     description: "Validate a lore panel layout object before saving.",
     inputSchema: {
       type: "object",
-      properties: { panel: { type: "object" } },
+      properties: { ...guildIdProp, panel: { type: "object" } },
       required: ["panel"],
     },
   },

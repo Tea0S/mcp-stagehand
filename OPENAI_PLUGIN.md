@@ -24,7 +24,7 @@ Until Publish, people still connect the hard way: custom MCP URL `https://mcp.st
 | Need | Why |
 |------|-----|
 | OpenAI **organization** where you’re owner (or Apps Management Write) | Portal access |
-| **Verified** publisher identity | **Individual** → listing shows your personal name. **Business** → listing shows the company (e.g. Tea House). Directory “By …” is from this identity, not the ZIP. |
+| **Verified** publisher identity | **Individual** → listing shows your personal name. **Business** → listing shows the company (**BackStagePass**). Directory “By …” is from this identity, not the ZIP. |
 | Hosted MCP live + OAuth | `mcp.stagehand.quest` + `stagehand.quest` Discord consent |
 | MCP tools annotated | Redeploy mcp-stagehand with `title` / readOnly / destructive |
 | Discord **test account** with Manage Server on a StageHand guild | Reviewers (no MFA / magic-link preferred) |
@@ -69,7 +69,7 @@ Docs say “choose your verified Developer identity” at upload — but that co
 If only your personal identity is verified, upload silently uses **Mere Lorraine-Putnam** — there is nothing to pick.  
 `developerName` in the ZIP does **not** override the directory “By …” line.
 
-**To list as Tea House / a company:** complete **business verification** in Platform settings first, then upload (or create a new submission) under that business identity in `platform.openai.com/plugins`.
+**To list as BackStagePass:** complete **business verification** in Platform settings first, then upload (or create a new submission) under that business identity in `platform.openai.com/plugins`.
 
 ### Upload (draft only)
 
@@ -154,11 +154,11 @@ The ChatGPT page with **+ Install plugin** is still **your** draft/workspace vie
 
 After publish, hosted MCP tool changes are scanned by OpenAI (often daily); metadata/skills changes need a new ZIP + review/publish.
 
-### Hide personal name / use an org (“By Tea House”)
+### Hide personal name / use org (“By BackStagePass”)
 
 You cannot obfuscate the name in the ZIP. OpenAI sets **Developer** from the **verified identity** you pick at upload:
 
-1. Open [OpenAI Platform settings](https://platform.openai.com/settings) → complete **Business verification** for Tea House / BackStagePass (legal business details as OpenAI asks).
+1. Open [OpenAI Platform settings](https://platform.openai.com/settings) → complete **Business verification** for **BackStagePass** (legal business details as OpenAI asks).
 2. When uploading (or re-uploading) the plugin, choose that **business** Developer identity — not your individual verification.
 3. Re-upload if the draft was created under the personal identity (or start a new plugin under the business identity).
 

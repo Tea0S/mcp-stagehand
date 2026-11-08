@@ -12,8 +12,10 @@ export async function getSurfaceHandler(
 ): Promise<ToolResult> {
   try {
     const { guild_id } = GuildOnlySchema.parse(args ?? {});
-    const guildId = client.resolveGuildId(guild_id);
-    const data = await client.getJson("/v1/stagehand/surface", { guild_id: guildId });
+    const data = await client.getJson(
+      "/v1/stagehand/surface",
+      client.surfaceQuery(guild_id)
+    );
     return okJson(data);
   } catch (e) {
     return errText(e instanceof Error ? e.message : String(e));

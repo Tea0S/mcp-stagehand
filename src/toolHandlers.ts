@@ -24,6 +24,9 @@ import {
   dicePresetsLiveHandler,
   iftttPendingCancelHandler,
   iftttPendingListHandler,
+  listClaimsHandler,
+  lookupClaimHandler,
+  museClaimsHandler,
   reputationLiveHandler,
 } from "./tools/extras.js";
 import {
@@ -50,6 +53,7 @@ import {
   indexUpsertHandler,
   layeredIndexDeleteHandler,
   layeredIndexUpsertHandler,
+  listIndexesHandler,
 } from "./tools/indexes.js";
 import {
   loreCarouselDeleteHandler,
@@ -86,6 +90,7 @@ import {
 } from "./tools/miaHiatus.js";
 import { rolesPostPanelHandler, rolesSyncHandler } from "./tools/roles.js";
 import { setupRequirementsHandler } from "./tools/setupRequirements.js";
+import { listGuildsHandler } from "./tools/guilds.js";
 import {
   getSurfaceHandler,
   listChannelsHandler,
@@ -102,12 +107,14 @@ type Handler = (args: unknown, client: StagehandClient) => Promise<ToolResult>;
 export const toolHandlers: Record<string, Handler> = {
   stagehand_auth_check: authCheckHandler,
   stagehand_setup_requirements: setupRequirementsHandler,
+  stagehand_list_guilds: listGuildsHandler,
   stagehand_get_surface: getSurfaceHandler,
   stagehand_list_channels: listChannelsHandler,
   stagehand_list_emojis: listEmojisHandler,
   stagehand_guild_update: guildUpdateHandler,
   stagehand_upload_asset: uploadAssetHandler,
 
+  stagehand_list_indexes: listIndexesHandler,
   stagehand_index_upsert: indexUpsertHandler,
   stagehand_index_upload_thumb: uploadIndexThumbHandler,
   stagehand_index_refresh_all: indexRefreshAllHandler,
@@ -162,6 +169,9 @@ export const toolHandlers: Record<string, Handler> = {
   stagehand_dice_presets_live: dicePresetsLiveHandler,
   stagehand_calendar_live: calendarLiveHandler,
   stagehand_reputation_live: reputationLiveHandler,
+  stagehand_list_claims: listClaimsHandler,
+  stagehand_lookup_claim: lookupClaimHandler,
+  stagehand_muse_claims: museClaimsHandler,
 
   stagehand_birthdays_list: birthdaysListHandler,
   stagehand_birthday_create: birthdayCreateHandler,

@@ -4,7 +4,7 @@
   "version": "1.0.2",
   "description": "Configure StageHand on Discord — indexes, lore, Flows, forms, dice, and more.",
   "author": {
-    "name": "Tea House",
+    "name": "BackStagePass",
     "email": "support@stagehand.quest",
     "url": "https://stagehand.quest"
   },
@@ -27,7 +27,7 @@
         "displayName": "StageHand",
         "shortDescription": "Discord StageHand setup helper",
         "longDescription": "StageHand automates Discord roleplay servers. Connect this plugin to configure indexes, lore panels, Flow Builder, forms, dice, mailboxes, scene, tickets, and more. Sign in with Discord on stagehand.quest (OAuth). Only works on servers where you have Manage Server — not a general Discord moderator.\n\nDocs: https://stagehand.quest/docs/stagehand/ai-helpers",
-        "developerName": "Tea House",
+        "developerName": "BackStagePass",
         "category": "Productivity",
         "capabilities": ["Write"],
         "websiteURL": "https://stagehand.quest",

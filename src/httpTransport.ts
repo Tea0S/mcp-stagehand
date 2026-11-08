@@ -130,7 +130,7 @@ export async function startHttpTransport(
         if (!bearer) {
           sendHostedUnauthorized(
             res,
-            "Missing Authorization Bearer sh_… key (or Authenticate via StageHand OAuth)"
+            "Missing Authorization Bearer — complete StageHand OAuth Authenticate (or send Bearer sh_…)"
           );
           return;
         }
@@ -190,7 +190,7 @@ export async function startHttpTransport(
             if (!bearer) {
               sendHostedUnauthorized(
                 res,
-                "Missing Authorization: Bearer sh_… — Authenticate in your AI app, or create a key at stagehand.quest → Dashboard → Me → AI helpers"
+                "Missing Authorization Bearer — Authenticate in your AI app (StageHand OAuth). Paste a Dashboard → Me sh_… key only if this host has no Authenticate button."
               );
               return;
             }
@@ -234,6 +234,26 @@ export async function startHttpTransport(
         } else {
           res.status(400).json({ error: "Expected initialize request" });
           return;
+        }
+      } else if (hosted) {
+        // Hosts (ChatGPT) refresh OAuth and send a new Bearer while keeping
+        // mcp-session-id. Rebind so tool calls do not keep a revoked sh_ key.
+        const bearer = parseBearer(req);
+        if (bearer && bearer !== entry.mcp.bearerToken) {
+          try {
+            entry.mcp.replaceAuth(
+              configFromUserKey({
+                apiKey: bearer,
+                defaultGuildId: parseGuildHeader(req),
+              })
+            );
+          } catch (e) {
+            sendHostedUnauthorized(
+              res,
+              e instanceof Error ? e.message : "Invalid API key"
+            );
+            return;
+          }
         }
       }
 

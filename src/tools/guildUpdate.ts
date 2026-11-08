@@ -51,11 +51,17 @@ export async function guildUpdateHandler(
     let payload: Record<string, unknown> = { ...a.guild_payload };
 
     if (a.merge_from_surface) {
-      const surface = (await client.getJson("/v1/stagehand/surface", {
-        guild_id: guildId,
-      })) as Record<string, unknown>;
+      const surface = (await client.getJson(
+        "/v1/stagehand/surface",
+        client.surfaceQuery(guildId, actorId)
+      )) as Record<string, unknown>;
+      // Surface shape is { guildId, actorId, forms, config: { roles, indexes, … } }
+      const config =
+        surface.config && typeof surface.config === "object" && !Array.isArray(surface.config)
+          ? (surface.config as Record<string, unknown>)
+          : surface;
       const key = SURFACE_SECTION_KEYS[a.section] || a.section;
-      const existing = surface[key];
+      const existing = config[key];
       if (existing && typeof existing === "object" && !Array.isArray(existing)) {
         payload = { ...(existing as Record<string, unknown>), ...payload };
       }

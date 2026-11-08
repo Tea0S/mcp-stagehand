@@ -41,7 +41,7 @@ Dashboard: https://stagehand.quest/dashboard/me
 
 ### Company
 
-- **Name:** Tea House (BackStagePass Group)  
+- **Name:** BackStagePass  
 - **Website:** https://stagehand.quest  
 - **Primary contact:** support@stagehand.quest  
 

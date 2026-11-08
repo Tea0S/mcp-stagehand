@@ -43,10 +43,57 @@ export class StagehandClient {
     const id = (actorId || this.config.actorId || "").trim();
     if (id) return id;
     if (this.config.authMode === "user_key") {
-      // Server overwrites actor_id from the sh_ key owner.
+      // Placeholder — CP binds the real Discord id from the sh_ / OAuth key.
       return "0";
     }
     throw new Error("actor_id required (or set STAGEHAND_ACTOR_ID)");
+  }
+
+  /** Query params for GET /v1/stagehand/surface (always includes actor_id). */
+  surfaceQuery(guildId?: string | null, actorId?: string | null): Record<string, string> {
+    return {
+      guild_id: this.resolveGuildId(guildId),
+      actor_id: this.resolveActorId(actorId),
+    };
+  }
+
+  /**
+   * Ensure JSON bodies include actor_id for StageHand write routes.
+   * User keys: CP overwrites with the key owner; placeholder "0" is still required by some validators.
+   */
+  private withActorBody(body: unknown): unknown {
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return body ?? {};
+    }
+    const obj = body as Record<string, unknown>;
+    const raw = obj.actor_id ?? obj.actorId;
+    const asStr = raw == null ? "" : String(raw).trim();
+    if (asStr && asStr !== "0") return obj;
+    try {
+      return { ...obj, actor_id: this.resolveActorId(asStr || null) };
+    } catch {
+      return obj;
+    }
+  }
+
+  /** Some GETs (surface) require actor_id even when the tool only knows guild_id. */
+  private withActorQuery(
+    path: string,
+    query?: Record<string, string>
+  ): Record<string, string> | undefined {
+    const q = { ...(query || {}) };
+    const needsActor =
+      path.includes("/stagehand/surface") ||
+      path.includes("/stagehand/user/");
+    if (!needsActor) return query;
+    const raw = (q.actor_id || "").trim();
+    if (raw && raw !== "0") return q;
+    try {
+      q.actor_id = this.resolveActorId(raw || null);
+    } catch {
+      /* ops token without actor — leave unset */
+    }
+    return q;
   }
 
   private url(path: string): string {
@@ -70,9 +117,10 @@ export class StagehandClient {
   }
 
   async getJson<T = unknown>(path: string, query?: Record<string, string>): Promise<T> {
+    const q = this.withActorQuery(path, query);
     const u = new URL(this.url(path));
-    if (query) {
-      for (const [k, v] of Object.entries(query)) {
+    if (q) {
+      for (const [k, v] of Object.entries(q)) {
         if (v !== undefined && v !== "") u.searchParams.set(k, v);
       }
     }
@@ -90,7 +138,7 @@ export class StagehandClient {
         Accept: "application/json",
         "Content-Type": "application/json",
       }),
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(this.withActorBody(body)),
     });
     return this.parseJson<T>(res);
   }
@@ -102,7 +150,7 @@ export class StagehandClient {
         Accept: "application/json",
         "Content-Type": "application/json",
       }),
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(this.withActorBody(body)),
     });
     return this.parseJson<T>(res);
   }
@@ -114,7 +162,7 @@ export class StagehandClient {
         Accept: "application/json",
         "Content-Type": "application/json",
       }),
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(this.withActorBody(body)),
     });
     return this.parseJson<T>(res);
   }

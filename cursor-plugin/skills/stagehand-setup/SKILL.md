@@ -10,14 +10,16 @@ You talk to StageHand through MCP tools (hosted at `mcp.stagehand.quest`). Auth 
 ## Before changing anything
 
 1. Call `stagehand_auth_check` and confirm success.
-2. Call `stagehand_setup_requirements` (or the surface/list tools) so you know which guild, channels, and roles are in play.
-3. Ask the user for missing Discord snowflake ids (channel, role, forum) and image uploads when a tool requires them.
+2. If the user names a server, call `stagehand_list_guilds` with that name (or a short substring) — **do not** ask for a guild id or channel link first.
+3. Call `stagehand_list_channels` / `stagehand_list_indexes` / surface tools to resolve forums and channels **by name** (indexes live under surface `config`).
+4. Ask only for assets the tools cannot discover (image uploads, ambiguous duplicates).
 
 ## Good requests
 
 - Forum / channel indexes
 - Lore panels and snippets
 - Flow Builder flows (nodes from the catalog)
+- Claim pools (`stagehand_list_claims` / `stagehand_lookup_claim` / `stagehand_muse_claims`)
 - Forms, mailboxes, scene, tickets, dice presets, roles
 
 ## Hard limits

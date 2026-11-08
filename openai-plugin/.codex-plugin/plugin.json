@@ -8,7 +8,7 @@
     "displayName": "StageHand",
     "shortDescription": "Discord StageHand setup helper",
     "longDescription": "StageHand automates Discord roleplay servers. Connect this plugin to configure indexes, lore panels, Flow Builder, forms, dice, and more. Sign in with Discord on stagehand.quest (OAuth). Only works on servers where you have Manage Server.",
-    "developerName": "Tea House",
+    "developerName": "BackStagePass",
     "category": "Productivity",
     "capabilities": ["Write"],
     "websiteURL": "https://stagehand.quest",

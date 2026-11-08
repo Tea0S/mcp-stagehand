@@ -89,4 +89,18 @@ export class StagehandMCPServer {
   get mcpServer(): Server {
     return this.server;
   }
+
+  /** Current Bearer (for session rebind when the host refreshes OAuth). */
+  get bearerToken(): string {
+    return this.config.bearerToken;
+  }
+
+  /**
+   * Swap the StageHand API client when the MCP host sends a new Authorization
+   * Bearer (OAuth refresh). Keeps the same MCP session / transport.
+   */
+  replaceAuth(config: StagehandConfig): void {
+    this.config = config;
+    this.client = new StagehandClient(config);
+  }
 }
