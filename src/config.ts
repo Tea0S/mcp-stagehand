@@ -34,7 +34,7 @@ export function assertUserApiKey(raw: string): string {
   const userKey = (raw || "").trim();
   if (!userKey.startsWith("sh_")) {
     throw new Error(
-      "API key must start with sh_ — create one at stagehand.quest → Dashboard → Me → AI helpers"
+      "API key must start with sh_ — create one at stagehand.quest → Dashboard → Me → MCPs"
     );
   }
   if (userKey.length < 12) {
@@ -78,14 +78,14 @@ export function loadConfig(): StagehandConfig {
   } else if (opsToken) {
     if (opsToken.length < 16) {
       throw new Error(
-        "Token looks too short. End users should set STAGEHAND_API_KEY (sh_…) from Dashboard → Me → AI helpers."
+        "Token looks too short. End users should set STAGEHAND_API_KEY (sh_…) from Dashboard → Me → MCPs."
       );
     }
     bearerToken = opsToken;
     authMode = "ops_token";
   } else {
     throw new Error(
-      "Set STAGEHAND_API_KEY (sh_… from stagehand.quest → Dashboard → Me → AI helpers)"
+      "Set STAGEHAND_API_KEY (sh_… from stagehand.quest → Dashboard → Me → MCPs)"
     );
   }
 

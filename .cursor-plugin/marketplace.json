@@ -15,7 +15,7 @@
       "source": "cursor-plugin",
       "description": "Configure StageHand on Discord with OAuth — indexes, lore, Flows, and more",
       "version": "1.0.0",
-      "homepage": "https://stagehand.quest/docs/stagehand/ai-helpers",
+      "homepage": "https://stagehand.quest/docs/stagehand/mcp",
       "repository": "https://github.com/Tea0S/mcp-stagehand",
       "license": "MIT",
       "keywords": ["stagehand", "discord", "mcp", "roleplay"],

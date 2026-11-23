@@ -15,7 +15,7 @@ OpenAI approves
 You click Publish  →  appears in ChatGPT & Codex plugin directory
 ```
 
-Until Publish, people still connect the hard way: custom MCP URL `https://mcp.stagehand.quest/mcp` + OAuth (Dashboard → Me → AI helpers).
+Until Publish, people still connect the hard way: custom MCP URL `https://mcp.stagehand.quest/mcp` + OAuth (Dashboard → Me → MCPs).
 
 ---
 
@@ -170,7 +170,7 @@ You cannot obfuscate the name in the ZIP. OpenAI sets **Developer** from the **v
 
 Users don’t need the directory:
 
-1. [stagehand.quest/dashboard/me](https://stagehand.quest/dashboard/me) → AI helpers  
+1. [stagehand.quest/dashboard/me](https://stagehand.quest/dashboard/me) → MCPs  
 2. Copy OAuth MCP JSON / add URL `https://mcp.stagehand.quest/mcp` in ChatGPT Developer / Connectors  
 3. Authenticate with Discord  
 

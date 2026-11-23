@@ -9,8 +9,8 @@ startCommand:
     properties:
       stagehandApiKey:
         type: string
-        title: StageHand AI helper key
-        description: sh_… key from stagehand.quest → Dashboard → Me → AI helpers
+        title: StageHand MCP key
+        description: sh_… key from stagehand.quest → Dashboard → Me → MCPs
       defaultGuildId:
         type: string
         title: Default Discord server id

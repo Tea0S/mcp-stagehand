@@ -25,7 +25,7 @@ export async function setupRequirementsHandler(
         "If the user did not provide required_ids or required_assets, ASK them before calling write tools.",
         "Resolve Discord channel/role/forum ids with stagehand_list_channels — never invent snowflakes.",
         "Upload local images with stagehand_upload_asset (or legacy thumb/banner tools).",
-        "This MCP configures StageHand only — it cannot kick users, create Discord channels, or moderate.",
+        "For Discord channel/role/message changes use stagehand_discord_* tools (Manage Server + StageHand bot perms). Prefer stagehand_discord_bot_capabilities before mutations.",
       ],
     });
   } catch (e) {

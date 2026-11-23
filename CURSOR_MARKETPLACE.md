@@ -35,7 +35,7 @@ Multi-plugin index (this repo): [`.cursor-plugin/marketplace.json`](.cursor-plug
 1. Cursor Settings → allow local plugin import if needed.
 2. Install from `cursor-plugin/` path **or** use Dashboard → Me → **Add to Cursor**.
 3. Authenticate → `stagehand_auth_check` succeeds.
-4. Confirm a key like `MCP · Cursor` appears under AI helpers (revocable).
+4. Confirm a key like `MCP · Cursor` appears under MCPs (revocable).
 
 ## Do not
 

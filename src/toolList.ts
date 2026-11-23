@@ -27,7 +27,19 @@ function annotateTools(tools: Tool[]): Tool[] {
       name === "stagehand_calendar_live" ||
       name === "stagehand_reputation_live" ||
       name === "stagehand_lookup_claim" ||
-      name === "stagehand_muse_claims";
+      name === "stagehand_muse_claims" ||
+      name === "stagehand_discord_bot_capabilities" ||
+      name === "stagehand_discord_get_channel" ||
+      name === "stagehand_discord_list_roles" ||
+      name === "stagehand_discord_get_forum_channels" ||
+      name === "stagehand_discord_get_forum_post" ||
+      name === "stagehand_discord_list_forum_threads" ||
+      name === "stagehand_discord_get_forum_tags" ||
+      name === "stagehand_discord_read_messages" ||
+      name === "stagehand_discord_get_reaction_users" ||
+      name === "stagehand_discord_list_pinned_messages" ||
+      name === "stagehand_discord_list_members" ||
+      name === "stagehand_discord_get_member";
 
     const isDestructive =
       /_(delete|clear|cancel|end)$/.test(name) ||
@@ -36,7 +48,11 @@ function annotateTools(tools: Tool[]): Tool[] {
       name === "stagehand_mia_hiatus_mia_clear" ||
       name === "stagehand_mia_hiatus_hiatus_end" ||
       name === "stagehand_emojis_delete" ||
-      name === "stagehand_mailbox_opener_presets";
+      name === "stagehand_mailbox_opener_presets" ||
+      name.startsWith("stagehand_discord_delete_") ||
+      name === "stagehand_discord_remove_role" ||
+      name === "stagehand_discord_remove_channel_permissions" ||
+      name === "stagehand_discord_remove_reaction";
 
     return {
       ...tool,
@@ -83,7 +99,7 @@ const _rawToolList: Tool[] = [
   {
     name: "stagehand_setup_requirements",
     description:
-      "BEFORE writing config for a vague user request: returns required Discord ids, assets to ask for, and which tools to use. Resolve the server with stagehand_list_guilds when the user gives a display name. Ask for missing channel/role ids or images only after listing — never invent snowflakes. StageHand setup only (not Discord moderation).",
+      "BEFORE writing StageHand config for a vague user request: returns required Discord ids, assets to ask for, and which tools to use. Resolve the server with stagehand_list_guilds when the user gives a display name. Ask for missing channel/role ids or images only after listing — never invent snowflakes. For live Discord channel/role/message changes use stagehand_discord_* (check stagehand_discord_bot_capabilities first).",
     inputSchema: {
       type: "object",
       properties: {
@@ -129,7 +145,7 @@ const _rawToolList: Tool[] = [
   {
     name: "stagehand_list_channels",
     description:
-      "List Discord channels/categories/roles as StageHand sees them (names + ids). After resolving the guild via stagehand_list_guilds, use this to find forums/channels by name — never invent ids.",
+      "List Discord channels/categories/roles as StageHand sees them (names + ids). Includes position (channel order), parentId, and permissionOverwrites (allowNames/denyNames) so you can copy layout/overrides accurately. After resolving the guild via stagehand_list_guilds, use this to find forums/channels by name — never invent ids. For one channel in detail use stagehand_discord_get_channel.",
     inputSchema: { type: "object", properties: { ...guildIdProp } },
   },
   {
@@ -198,7 +214,8 @@ const _rawToolList: Tool[] = [
   // Indexes
   {
     name: "stagehand_index_upsert",
-    description: "Create/update a StageHand forum index. Needs real forum_id. Optional thumb via upload first.",
+    description:
+      "Create/update a StageHand forum index. Needs real forum_id. Optional thumb via upload first. Set index_data.pin_thread (default true) to pin the index post to the top of the forum.",
     inputSchema: {
       type: "object",
       properties: {
@@ -617,7 +634,8 @@ const _rawToolList: Tool[] = [
   // Index extras
   {
     name: "stagehand_group_index_upsert",
-    description: "Create/update a group index (multi-forum → one channel). Needs target_channel_id + group_index_name.",
+    description:
+      "Create/update a group index (multi-forum → one text channel or forum). index_data needs target_channel_id, group_index_name, source_forum_ids. Optional: preferred_tags, exclude_tags, single_thread, pin_thread (default true when target is a forum).",
     inputSchema: {
       type: "object",
       properties: { ...guildIdProp, ...actorIdProp, index_data: { type: "object" } },
@@ -635,7 +653,8 @@ const _rawToolList: Tool[] = [
   },
   {
     name: "stagehand_layered_index_upsert",
-    description: "Create/update a layered index.",
+    description:
+      "Create/update a layered index (main/role/sub tag layers across forums → one target). index_data needs target_channel_id, layered_index_name, source_forum_ids, main_tags, preferred_tags, sub_tags. Optional: pin_thread (default true when target is a forum).",
     inputSchema: {
       type: "object",
       properties: { ...guildIdProp, ...actorIdProp, index_data: { type: "object" } },
@@ -937,6 +956,621 @@ const _rawToolList: Tool[] = [
         channel_id: { type: "string" },
       },
       required: ["channel_id"],
+    },
+  },
+
+  // Discord guild ops (via StageHand bot; user key needs Manage Server)
+  {
+    name: "stagehand_discord_bot_capabilities",
+    description:
+      "Check which Discord permissions StageHand currently has on a guild (Manage Channels/Roles/Messages/Webhooks, etc.). Call before mutations when unsure.",
+    inputSchema: { type: "object", properties: { ...guildIdProp } },
+  },
+  {
+    name: "stagehand_discord_create_category",
+    description: "Create a Discord category. Requires StageHand Manage Channels.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        name: { type: "string" },
+        position: { type: "number" },
+        reason: { type: "string" },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "stagehand_discord_edit_category",
+    description: "Edit a Discord category name/position.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        category_id: { type: "string" },
+        name: { type: "string" },
+        position: { type: "number" },
+        reason: { type: "string" },
+      },
+      required: ["category_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_category",
+    description: "Delete a Discord category. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        category_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["category_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_get_channel",
+    description:
+      "Get one Discord channel with position, parentId, and permission overwrites (allowNames/denyNames). Use before copying overrides with stagehand_discord_set_channel_permissions.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_create_text_channel",
+    description: "Create a Discord text channel (optional topic + parent category).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        name: { type: "string" },
+        channel_name: { type: "string" },
+        topic: { type: "string" },
+        category_id: { type: "string" },
+        reason: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "stagehand_discord_create_forum_channel",
+    description: "Create a Discord forum channel.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        name: { type: "string" },
+        topic: { type: "string" },
+        category_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "stagehand_discord_create_voice_channel",
+    description: "Create a Discord voice channel.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        name: { type: "string" },
+        channel_name: { type: "string" },
+        category_id: { type: "string" },
+        user_limit: { type: "number" },
+        reason: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "stagehand_discord_edit_channel",
+    description: "Edit a Discord channel name, topic, parent category, or position.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        name: { type: "string" },
+        topic: { type: "string" },
+        parent_id: { type: "string" },
+        position: { type: "number" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_channel",
+    description: "Delete a Discord channel. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_set_channel_permissions",
+    description:
+      "Set permission overwrites for a role or member on a channel/category. allow/deny are Discord.js flag names (e.g. ViewChannel, SendMessages).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        target_id: { type: "string" },
+        role_id: { type: "string" },
+        allow: { type: "array", items: { type: "string" } },
+        deny: { type: "array", items: { type: "string" } },
+        reason: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_remove_channel_permissions",
+    description: "Remove all permission overwrites for a role/member on a channel.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        target_id: { type: "string" },
+        role_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_list_roles",
+    description: "List Discord roles for a guild (id, name, color, position, flags).",
+    inputSchema: { type: "object", properties: { ...guildIdProp } },
+  },
+  {
+    name: "stagehand_discord_create_role",
+    description: "Create a Discord role. permissions are flag names like ManageChannels.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        name: { type: "string" },
+        color: { type: "string" },
+        hoist: { type: "boolean" },
+        mentionable: { type: "boolean" },
+        permissions: { type: "array", items: { type: "string" } },
+        reason: { type: "string" },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "stagehand_discord_edit_role",
+    description: "Edit a Discord role.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        role_id: { type: "string" },
+        name: { type: "string" },
+        color: { type: "string" },
+        hoist: { type: "boolean" },
+        mentionable: { type: "boolean" },
+        permissions: { type: "array", items: { type: "string" } },
+        position: { type: "number" },
+        reason: { type: "string" },
+      },
+      required: ["role_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_role",
+    description: "Delete a Discord role. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        role_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["role_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_assign_role",
+    description: "Assign a role to a guild member.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        user_id: { type: "string" },
+        role_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["user_id", "role_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_remove_role",
+    description: "Remove a role from a guild member.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        user_id: { type: "string" },
+        role_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["user_id", "role_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_get_forum_channels",
+    description: "List forum channels in a guild.",
+    inputSchema: { type: "object", properties: { ...guildIdProp } },
+  },
+  {
+    name: "stagehand_discord_create_forum_post",
+    description: "Create a forum post/thread with optional tags and pin.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        forum_channel_id: { type: "string" },
+        title: { type: "string" },
+        content: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        pinned: { type: "boolean" },
+      },
+      required: ["forum_channel_id", "title", "content"],
+    },
+  },
+  {
+    name: "stagehand_discord_get_forum_post",
+    description: "Get a forum post/thread and recent messages.",
+    inputSchema: {
+      type: "object",
+      properties: { ...guildIdProp, thread_id: { type: "string" } },
+      required: ["thread_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_list_forum_threads",
+    description: "List threads in a forum channel (active + optional archived).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        forum_channel_id: { type: "string" },
+        include_archived: { type: "boolean" },
+        limit: { type: "number" },
+      },
+      required: ["forum_channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_reply_to_forum",
+    description: "Reply in a forum post/thread.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        thread_id: { type: "string" },
+        message: { type: "string" },
+      },
+      required: ["thread_id", "message"],
+    },
+  },
+  {
+    name: "stagehand_discord_update_forum_post",
+    description: "Update forum post title, tags, archived/locked/pinned.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        thread_id: { type: "string" },
+        name: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        archived: { type: "boolean" },
+        locked: { type: "boolean" },
+        pinned: { type: "boolean" },
+      },
+      required: ["thread_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_forum_post",
+    description: "Delete a forum post/thread. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        thread_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["thread_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_get_forum_tags",
+    description: "List available tags on a forum channel.",
+    inputSchema: {
+      type: "object",
+      properties: { ...guildIdProp, forum_channel_id: { type: "string" } },
+      required: ["forum_channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_set_forum_tags",
+    description: "Replace available tags on a forum channel. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        forum_channel_id: { type: "string" },
+        tags: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              emoji: { type: "string" },
+              moderated: { type: "boolean" },
+            },
+            required: ["name"],
+          },
+        },
+      },
+      required: ["forum_channel_id", "tags"],
+    },
+  },
+  {
+    name: "stagehand_discord_send",
+    description: "Send a message as StageHand in a text channel (optional reply).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message: { type: "string" },
+        reply_to_message_id: { type: "string" },
+      },
+      required: ["channel_id", "message"],
+    },
+  },
+  {
+    name: "stagehand_discord_read_messages",
+    description: "Read recent messages from a channel (before/after/around snowflakes).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        limit: { type: "number" },
+        before: { type: "string" },
+        after: { type: "string" },
+        around: { type: "string" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_edit_message",
+    description: "Edit a message previously sent by StageHand.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        content: { type: "string" },
+      },
+      required: ["channel_id", "message_id", "content"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_message",
+    description: "Delete a message. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id", "message_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_add_reaction",
+    description: "Add an emoji reaction to a message.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        emoji: { type: "string" },
+      },
+      required: ["channel_id", "message_id", "emoji"],
+    },
+  },
+  {
+    name: "stagehand_discord_add_multiple_reactions",
+    description: "Add multiple emoji reactions to a message.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        emojis: { type: "array", items: { type: "string" } },
+      },
+      required: ["channel_id", "message_id", "emojis"],
+    },
+  },
+  {
+    name: "stagehand_discord_remove_reaction",
+    description: "Remove a reaction (own if user_id omitted; others need Manage Messages).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        emoji: { type: "string" },
+        user_id: { type: "string" },
+      },
+      required: ["channel_id", "message_id", "emoji"],
+    },
+  },
+  {
+    name: "stagehand_discord_get_reaction_users",
+    description: "List users who reacted with a specific emoji.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        emoji: { type: "string" },
+        limit: { type: "number" },
+      },
+      required: ["channel_id", "message_id", "emoji"],
+    },
+  },
+  {
+    name: "stagehand_discord_pin_message",
+    description: "Pin a message in a channel.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id", "message_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_unpin_message",
+    description: "Unpin a message.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        message_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id", "message_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_list_pinned_messages",
+    description: "List pinned messages in a channel.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        limit: { type: "number" },
+      },
+      required: ["channel_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_list_members",
+    description: "List guild members (paginated). Needs Server Members Intent on the bot.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        limit: { type: "number" },
+        after: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "stagehand_discord_get_member",
+    description: "Get one guild member by user id.",
+    inputSchema: {
+      type: "object",
+      properties: { ...guildIdProp, user_id: { type: "string" } },
+      required: ["user_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_create_webhook",
+    description:
+      "Create a channel webhook. Token is returned once — prefer stagehand_discord_send for normal posts.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        channel_id: { type: "string" },
+        name: { type: "string" },
+        avatar: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["channel_id", "name"],
+    },
+  },
+  {
+    name: "stagehand_discord_edit_webhook",
+    description: "Edit a webhook (name/avatar/channel).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        webhook_id: { type: "string" },
+        name: { type: "string" },
+        avatar: { type: "string" },
+        channel_id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["webhook_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_delete_webhook",
+    description: "Delete a webhook. Confirm with the user first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        webhook_id: { type: "string" },
+        webhook_token: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["webhook_id"],
+    },
+  },
+  {
+    name: "stagehand_discord_send_webhook_message",
+    description:
+      "Send via webhook id+token from create. Prefer stagehand_discord_send for normal StageHand messages.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ...guildIdProp,
+        webhook_id: { type: "string" },
+        webhook_token: { type: "string" },
+        content: { type: "string" },
+        username: { type: "string" },
+        avatar_url: { type: "string" },
+        thread_id: { type: "string" },
+      },
+      required: ["webhook_id", "webhook_token", "content"],
     },
   },
 ];

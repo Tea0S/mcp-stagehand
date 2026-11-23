@@ -113,6 +113,9 @@ export class StagehandClient {
     if (status === 401 || status === 403) {
       return `StageHand API ${status}: authentication failed. Check STAGEHAND_API_KEY (sh_…) or CONTROL_PLANE_TOKEN, Manage Server on the guild, and CONTROL_PLANE_URL. Detail: ${redacted}`;
     }
+    if (status === 429) {
+      return `StageHand API 429: Discord rate limit. Wait for the suggested delay, then retry one tool at a time. Detail: ${redacted}`;
+    }
     return `StageHand API ${status}: ${redacted}`;
   }
 
@@ -167,16 +170,47 @@ export class StagehandClient {
     return this.parseJson<T>(res);
   }
 
-  async deleteJson<T = unknown>(path: string, query?: Record<string, string>): Promise<T> {
+  /**
+   * DELETE with optional query and/or JSON body.
+   * Pass a string-record as the second arg for query-only (legacy).
+   * Pass `{ query?, body? }` when the control plane expects a JSON body (guild-scoped Discord ops).
+   */
+  async deleteJson<T = unknown>(
+    path: string,
+    queryOrOpts?: Record<string, string> | { query?: Record<string, string>; body?: unknown }
+  ): Promise<T> {
+    let query: Record<string, string> | undefined;
+    let body: unknown;
+    if (queryOrOpts && typeof queryOrOpts === "object" && ("body" in queryOrOpts || "query" in queryOrOpts)) {
+      const opts = queryOrOpts as { query?: Record<string, string>; body?: unknown };
+      query = opts.query;
+      body = opts.body;
+    } else {
+      query = queryOrOpts as Record<string, string> | undefined;
+    }
     const u = new URL(this.url(path));
     if (query) {
       for (const [k, v] of Object.entries(query)) {
         if (v !== undefined && v !== "") u.searchParams.set(k, v);
       }
     }
+    // Ensure guild_id is on the query for user-key auth when only body was provided.
+    if (body && typeof body === "object" && !Array.isArray(body)) {
+      const gid = String((body as Record<string, unknown>).guild_id || "").trim();
+      if (gid && !u.searchParams.get("guild_id")) {
+        u.searchParams.set("guild_id", gid);
+      }
+    }
+    const headers = this.authHeaders({ Accept: "application/json" });
+    let payload: string | undefined;
+    if (body !== undefined) {
+      headers["Content-Type"] = "application/json";
+      payload = JSON.stringify(this.withActorBody(body));
+    }
     const res = await fetch(u, {
       method: "DELETE",
-      headers: this.authHeaders({ Accept: "application/json" }),
+      headers,
+      body: payload,
     });
     return this.parseJson<T>(res);
   }

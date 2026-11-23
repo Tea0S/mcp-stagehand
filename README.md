@@ -1,15 +1,15 @@
 # mcp-stagehand
 
-Let AI helpers (Codex, ChatGPT, Claude, Cursor) configure **StageHand** — indexes, lore, Flows, forms, roles, dice, mailboxes, scene, tickets, and most other dashboard modules.
+Let Codex, ChatGPT, Claude, and Cursor configure **StageHand** via MCP — indexes, lore, Flows, forms, roles, dice, mailboxes, scene, tickets, and most other dashboard modules.
 
-**Players:** [Connect an AI helper](https://stagehand.quest/docs/stagehand/ai-helpers) · [What it can do](https://stagehand.quest/docs/stagehand/ai-helper-capabilities) · [SETUP.md](SETUP.md)  
+**Players:** [Connect the MCP](https://stagehand.quest/docs/stagehand/mcp) · [What it can do](https://stagehand.quest/docs/stagehand/mcp-capabilities) · [SETUP.md](SETUP.md)  
 **Staff (VPS):** [SERVER.md](SERVER.md) · **Staff (npm):** [PUBLISH.md](PUBLISH.md)
 
 Version **1.3** covers the full dual-auth StageHand setup surface (not Discord moderation). Agents should call `stagehand_setup_requirements` and ask for missing images/ids.
 
 ## Quick start (hosted — no Node)
 
-1. Open [Dashboard → Me → AI helpers](https://stagehand.quest/dashboard/me)
+1. Open [Dashboard → Me → MCPs](https://stagehand.quest/dashboard/me)
 2. Click **Add to Cursor** → **Authenticate** and sign in with Discord (preferred), **or** create a key and copy Codex / MCP JSON
 3. Ask the assistant: `Run stagehand_auth_check`
 

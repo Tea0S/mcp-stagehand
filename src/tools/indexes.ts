@@ -20,6 +20,8 @@ const IndexDataSchema = z.object({
   sort_by_tags: z.boolean().optional(),
   use_character_sorting: z.boolean().optional(),
   priority_tag: z.string().optional(),
+  /** Pin the index forum post to the top of its parent forum (default true). */
+  pin_thread: z.boolean().optional(),
 });
 
 const ListIndexesSchema = z.object({
@@ -54,6 +56,12 @@ export async function listIndexesHandler(
     const indexes = Array.isArray(surface?.config?.indexes)
       ? surface.config!.indexes!
       : [];
+    const groupIndexes = Array.isArray(surface?.config?.group_indexes)
+      ? surface.config!.group_indexes!
+      : [];
+    const layeredIndexes = Array.isArray(surface?.config?.layered_indexes)
+      ? surface.config!.layered_indexes!
+      : [];
     const indexedForumIds = new Set(
       indexes
         .map((row) => String(row.forum_id || "").trim())
@@ -70,6 +78,25 @@ export async function listIndexesHandler(
         name: String(f.name || ""),
       }));
 
+    const hintParts: string[] = [
+      "Kinds: stagehand_index_upsert (single forum), stagehand_group_index_upsert (multi-forum → one target), stagehand_layered_index_upsert (tag layers → one target). pin_thread defaults true for forum targets.",
+    ];
+    if (forumsMissingIndex.length === 0) {
+      hintParts.push("Every listed forum already has a single-forum StageHand index (or there are no forums).");
+    } else {
+      hintParts.push(
+        `Forums without a single-forum index: ${forumsMissingIndex
+          .map((f) => f.name || f.id)
+          .join(", ")}. Use stagehand_index_upsert with forum_id + index_name.`
+      );
+    }
+    if (groupIndexes.length) {
+      hintParts.push(`${groupIndexes.length} group index(es) configured.`);
+    }
+    if (layeredIndexes.length) {
+      hintParts.push(`${layeredIndexes.length} layered index(es) configured.`);
+    }
+
     return okJson({
       ok: true,
       guild_id: guildId,
@@ -78,21 +105,17 @@ export async function listIndexesHandler(
         index_name: String(row.index_name || ""),
         index_thread_name: String(row.index_thread_name || ""),
         has_thumb_image: Boolean(row.has_thumb_image),
+        pin_thread: row.pin_thread !== false,
       })),
-      group_indexes: surface?.config?.group_indexes ?? [],
-      layered_indexes: surface?.config?.layered_indexes ?? [],
+      group_indexes: groupIndexes,
+      layered_indexes: layeredIndexes,
       forums: forums.map((f) => ({
         id: String(f.id || ""),
         name: String(f.name || ""),
       })),
       forums_missing_index: forumsMissingIndex,
       channels_error: channels?.error || null,
-      hint:
-        forumsMissingIndex.length === 0
-          ? "Every forum already has a StageHand index (or there are no forums)."
-          : `Forums without an index: ${forumsMissingIndex
-              .map((f) => f.name || f.id)
-              .join(", ")}. Use stagehand_index_upsert with forum_id + index_name.`,
+      hint: hintParts.join(" "),
     });
   } catch (e) {
     return errText(e instanceof Error ? e.message : String(e));
@@ -190,7 +213,8 @@ export async function groupIndexUpsertHandler(
     });
     return okJson({
       ...((data as object) || {}),
-      note: "Group index needs target_channel_id, group_index_name, and usually source_forum_ids.",
+      note:
+        "Group index needs target_channel_id, group_index_name, and usually source_forum_ids. Optional pin_thread (default true) pins forum index posts when the target is a forum.",
     });
   } catch (e) {
     return errText(e instanceof Error ? e.message : String(e));
@@ -237,7 +261,11 @@ export async function layeredIndexUpsertHandler(
       actor_id: client.resolveActorId(a.actor_id),
       index_data: a.index_data,
     });
-    return okJson(data);
+    return okJson({
+      ...((data as object) || {}),
+      note:
+        "Layered index needs target_channel_id, layered_index_name, source_forum_ids, main_tags, preferred_tags, sub_tags. Optional pin_thread (default true) when the target is a forum.",
+    });
   } catch (e) {
     return errText(e instanceof Error ? e.message : String(e));
   }

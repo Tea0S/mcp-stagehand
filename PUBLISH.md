@@ -43,7 +43,7 @@ Or edit `"version"` manually, then publish.
 
 ## After publish
 
-1. Update [stagehand.quest docs](https://stagehand.quest/docs/stagehand/ai-helpers) if the package name changed.
+1. Update [stagehand.quest docs](https://stagehand.quest/docs/stagehand/mcp) if the package name changed.
 2. Test on a clean machine / empty folder:
 
 ```powershell

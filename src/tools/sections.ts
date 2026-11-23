@@ -256,13 +256,35 @@ export const SETUP_REQUIREMENTS: Record<SetupFeature, Omit<SetupRequirements, "f
     tips: [],
   },
   indexes: {
-    write_via: ["stagehand_index_*", "stagehand_upload_asset(kind=index_thumb)"],
-    required_ids: ["guild_id", "forum_id"],
+    write_via: [
+      "stagehand_list_indexes",
+      "stagehand_index_upsert (single-forum)",
+      "stagehand_group_index_upsert (multi-forum → one target)",
+      "stagehand_layered_index_upsert (tag layers → one target)",
+      "stagehand_upload_asset(kind=index_thumb)",
+    ],
+    required_ids: ["guild_id", "forum_id OR target_channel_id + source_forum_ids"],
     required_assets: [],
-    optional: ["thumb images", "preferred_tags"],
-    ask_user_if_missing: ["Forum channel", "Tags to include", "Optional thumb image"],
-    discord_first_publish_notes: ["Index upsert refreshes the Discord index message."],
-    tips: ["Creating the Discord forum itself is not this MCP — ask staff or use a Discord helper."],
+    optional: [
+      "thumb images",
+      "preferred_tags / exclude_tags",
+      "pin_thread (default true — pins forum index posts)",
+      "single_thread (group indexes into a forum)",
+    ],
+    ask_user_if_missing: [
+      "Which kind: single-forum, group, or layered?",
+      "Forum(s) / target channel",
+      "Tags to include",
+      "Optional thumb image",
+    ],
+    discord_first_publish_notes: [
+      "Upsert refreshes the Discord index message/thread.",
+      "pin_thread keeps forum index posts pinned (group/layered only when the target is a forum).",
+    ],
+    tips: [
+      "List existing indexes with stagehand_list_indexes before creating duplicates.",
+      "Creating Discord forums/channels themselves: use stagehand_discord_* tools.",
+    ],
   },
   lore: {
     write_via: ["stagehand_lore_*", "stagehand_upload_asset(kind=lore_banner)"],

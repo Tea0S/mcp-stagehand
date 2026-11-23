@@ -2,7 +2,7 @@
 
 OpenAI plugin package (Agent Plugins format) for StageHand’s hosted MCP.
 
-**Docs:** https://stagehand.quest/docs/stagehand/ai-helpers  
+**Docs:** https://stagehand.quest/docs/stagehand/mcp  
 **Privacy:** https://stagehand.quest/privacy  
 **Support:** https://discord.gg/nd6FUaBpaV · support@stagehand.quest
 

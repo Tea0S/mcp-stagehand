@@ -1,12 +1,12 @@
 # Codex + ChatGPT (detail)
 
-Canonical player guide: [https://stagehand.quest/docs/stagehand/ai-helpers](https://stagehand.quest/docs/stagehand/ai-helpers)
+Canonical player guide: [https://stagehand.quest/docs/stagehand/mcp](https://stagehand.quest/docs/stagehand/mcp)
 
 Prefer the **hosted** helper — no Node, no tunnel.
 
 ## Codex (hosted)
 
-1. Key from [Dashboard → Me → AI helpers](https://stagehand.quest/dashboard/me) (or use **Copy Codex config**)
+1. Key from [Dashboard → Me → MCPs](https://stagehand.quest/dashboard/me) (or use **Copy Codex config**)
 2. Add to `%USERPROFILE%\.codex\config.toml`:
 
 ```toml

@@ -2,14 +2,14 @@
 
 **Staff only** — never link this from player docs or the public site.
 
-VPS side so end users can mint `sh_…` keys on stagehand.quest and use the **hosted** MCP at `https://mcp.stagehand.quest/mcp` (or local `npx` as a fallback). Players: [SETUP.md](SETUP.md) / [stagehand.quest/docs/stagehand/ai-helpers](https://stagehand.quest/docs/stagehand/ai-helpers).
+VPS side so end users can mint `sh_…` keys on stagehand.quest and use the **hosted** MCP at `https://mcp.stagehand.quest/mcp` (or local `npx` as a fallback). Players: [SETUP.md](SETUP.md) / [stagehand.quest/docs/stagehand/mcp](https://stagehand.quest/docs/stagehand/mcp).
 
 ## What must be running
 
 | Piece | Role |
 |-------|------|
 | MultiMuse **control plane** (`multimuse-control-plane`, `:7070` / `control.multimuse.app`) | Dual auth (`CONTROL_PLANE_TOKEN` or `sh_…`), mint/list/revoke keys, StageHand writes |
-| **stagehand-web** (Dokploy → stagehand.quest) | Dashboard → Me → AI helpers UI + BFF + one-click install links |
+| **stagehand-web** (Dokploy → stagehand.quest) | Dashboard → Me → MCPs UI + BFF + one-click install links |
 | **mcp-stagehand** (`mcp-stagehand` systemd, `mcp.stagehand.quest`) | Hosted multi-tenant Streamable HTTP MCP |
 | StageHand bot token on CP (`STAGEHAND_BOT_TOKEN`) | Live Manage Server checks for user keys |
 | Postgres (`MULTIMUSE_DATABASE_URL`) | Table `stagehand_user_api_keys` |
@@ -192,7 +192,7 @@ sudo systemctl restart mcp-stagehand
 
 ## 4. Redeploy stagehand-web
 
-Push/merge the Me AI helpers one-click UI + docs, then let Dokploy rebuild `ghcr.io/tea0s/stagehand-web:main`.
+Push/merge the Me MCPs one-click UI + docs, then let Dokploy rebuild `ghcr.io/tea0s/stagehand-web:main`.
 
 Env on the web app (unchanged pattern):
 
@@ -203,7 +203,7 @@ Optional (defaults match production):
 
 - `NEXT_PUBLIC_STAGEHAND_MCP_URL=https://mcp.stagehand.quest/mcp`
 
-Verify while logged in: **https://stagehand.quest/dashboard/me** → **AI helpers** → Create key → **Add to Cursor** / Codex copy blocks appear.
+Verify while logged in: **https://stagehand.quest/dashboard/me** → **MCPs** → Create key → **Add to Cursor** / Codex copy blocks appear.
 
 ## 5. Optional: single-user HTTP (private tunnel)
 

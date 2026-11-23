@@ -17,7 +17,7 @@ Requires a **paid Claude plan** on the submitting account.
 | **One-liner** (≤200) | Configure StageHand on Discord — indexes, lore, Flow Builder, forms, dice, and more. |
 | **Description** (≤2000) | See below |
 | **Categories** | Productivity, Developer tools, Communication (pick 1–5 as portal allows) |
-| **Documentation** | https://stagehand.quest/docs/stagehand/ai-helpers |
+| **Documentation** | https://stagehand.quest/docs/stagehand/mcp |
 | **Privacy policy** | https://stagehand.quest/privacy |
 | **Support** | support@stagehand.quest |
 | **Icon** | https://stagehand.quest/stagehand-logo.png |
@@ -29,8 +29,8 @@ StageHand is a Discord server-automation bot for roleplay communities. This conn
 
 Sign in with Discord on stagehand.quest (OAuth). The helper only acts on servers where your Discord account has Manage Server (or Administrator / owner). It does not perform general Discord moderation such as kicks, bans, or arbitrary channel deletion.
 
-Docs: https://stagehand.quest/docs/stagehand/ai-helpers  
-Capabilities: https://stagehand.quest/docs/stagehand/ai-helper-capabilities  
+Docs: https://stagehand.quest/docs/stagehand/mcp  
+Capabilities: https://stagehand.quest/docs/stagehand/mcp-capabilities  
 Dashboard: https://stagehand.quest/dashboard/me  
 
 ### Use cases
